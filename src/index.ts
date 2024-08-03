@@ -1,6 +1,6 @@
 import express from 'express';
 import { createServer } from 'http';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import cors from 'cors';
 import userRoute from './routes/userRoute'
 import messageRoute from './routes/messageRoute';
@@ -30,11 +30,14 @@ io.on('connection', (socket) => {
     const token = socket.handshake.auth.token;
     const { profile }: any = jwtDecode(token);
     online_users.set(socket.id, profile);
+    console.log(online_users);
 
     io.emit('online_users', Array.from(online_users));
 
     socket.on('message', (payload) => {
+        console.log('Message for emit: ',payload);
         io.to(payload.socketinfo.receiver).emit("message", payload);
+        console.log('Message for emited');
     })
 
     socket.on('disconnect', () => {

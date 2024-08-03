@@ -29,14 +29,12 @@ io.on('connection', (socket) => {
     const token = socket.handshake.auth.token;
     const { profile } = (0, jwt_decode_1.jwtDecode)(token);
     online_users.set(socket.id, profile);
-    console.log(online_users);
     io.emit('online_users', Array.from(online_users));
     socket.on('message', (payload) => {
         io.to(payload.socketinfo.receiver).emit("message", payload);
     });
     socket.on('disconnect', () => {
         online_users.delete(socket.id);
-        console.log(online_users);
         socket.disconnect();
         io.emit('all_users', Array.from(online_users));
     });
