@@ -178,3 +178,21 @@ export const getUser = async (req: Request, res: Response) => {
         })
     }
 }
+
+export const clearDB = async (req: Request, res: Response) => {
+    console.log("Hello world");
+    try{
+        await User.deleteMany({});
+        return res.status(200).json({
+            status: true,
+            success: true,
+            message: "Database clear successfully.."
+        })
+    }catch(err: any){
+        return res.status(500).json({
+            status: false,
+            success: false,
+            message: err.message,
+        })
+    }
+}

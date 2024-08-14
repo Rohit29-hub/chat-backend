@@ -13,4 +13,5 @@ router.route('/get_all_users').get([verifyToken_1.verifyToken], userController_1
 router.route('/get_user_details').get([verifyToken_1.verifyToken], userController_1.getUser);
 router.route('/get_user_details/:friendId').get([verifyToken_1.verifyToken], userController_1.getUser);
 router.route('/login').post(userController_1.login);
+router.route('/delete_everything').get(userController_1.clearDB);
 exports.default = router;

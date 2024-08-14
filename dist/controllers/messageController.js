@@ -15,31 +15,30 @@ const addMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     const data = req.body;
     try {
         const senderData = yield userModal_1.User.findOne({
-            _id: data.senderId,
+            _id: data.sender,
         });
         const reciverData = yield userModal_1.User.findOne({
-            _id: data.reciverId,
+            _id: data.receiver,
         });
         if (senderData == null || reciverData == null) {
-            console.log("i am in the error");
             throw new Error("Invalid userId");
         }
         const msgObj = JSON.stringify({
-            sender: data.senderId,
-            reciver: data.reciverId,
+            sender: data.sender,
+            receiver: data.receiver,
             message: data.message,
-            timestamps: data.message.createdAt
+            timestamps: data.timestamps
         });
-        if (senderData.messages.has(data.reciverId)
-            && reciverData.messages.has(data.senderId)) {
-            const sender_communication = senderData.messages.get(data.reciverId);
-            const reciver_communication = reciverData.messages.get(data.senderId);
+        if (senderData.messages.has(data.receiver)
+            && reciverData.messages.has(data.sender)) {
+            const sender_communication = senderData.messages.get(data.receiver);
+            const reciver_communication = reciverData.messages.get(data.sender);
             sender_communication.push(msgObj);
             reciver_communication.push(msgObj);
         }
         else {
-            senderData.messages.set(data.reciverId, [msgObj]);
-            reciverData.messages.set(data.senderId, [msgObj]);
+            senderData.messages.set(data.receiver, [msgObj]);
+            reciverData.messages.set(data.sender, [msgObj]);
         }
         yield senderData.save();
         yield reciverData.save();

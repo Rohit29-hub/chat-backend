@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUser = exports.login = exports.UserController = exports.UserProfileController = exports.getAllUsers = void 0;
+exports.clearDB = exports.getUser = exports.login = exports.UserController = exports.UserProfileController = exports.getAllUsers = void 0;
 const userModal_1 = require("../model/userModal");
 const helper_1 = require("../helper");
 const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -174,3 +174,22 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getUser = getUser;
+const clearDB = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("Hello world");
+    try {
+        yield userModal_1.User.deleteMany({});
+        return res.status(200).json({
+            status: true,
+            success: true,
+            message: "Database clear successfully.."
+        });
+    }
+    catch (err) {
+        return res.status(500).json({
+            status: false,
+            success: false,
+            message: err.message,
+        });
+    }
+});
+exports.clearDB = clearDB;

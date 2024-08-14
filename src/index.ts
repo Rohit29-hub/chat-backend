@@ -26,6 +26,15 @@ app.use(cors());
 // the list of online users
 const online_users = new Map();
 
+function findSocketId(receiverId: string) {
+    for (const [key, value] of online_users.entries()) {
+        if (value.user === receiverId) {
+            return key;
+        }
+    }
+    return null;
+}
+
 io.on('connection', (socket) => {
     const token = socket.handshake.auth.token;
     const { profile }: any = jwtDecode(token);
@@ -35,9 +44,8 @@ io.on('connection', (socket) => {
     io.emit('online_users', Array.from(online_users));
 
     socket.on('message', (payload) => {
-        console.log('Message for emit: ',payload);
-        io.to(payload.socketinfo.receiver).emit("message", payload);
-        console.log('Message for emited');
+        const socketId = findSocketId(payload.receiver);
+        io.to(socketId).emit("message", payload);
     })
 
     socket.on('disconnect', () => {
