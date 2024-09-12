@@ -42,8 +42,7 @@ const userSchema = new Schema({
         type: Map,
         of: [String],
         default: {}
-    }
-
+    },
 }, { timestamps: true })
 
 export const UserProfile = mongoose.model('UserProfile', userProfileSchema);

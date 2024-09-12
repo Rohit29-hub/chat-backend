@@ -6,6 +6,7 @@ import userRoute from './routes/userRoute'
 import messageRoute from './routes/messageRoute';
 import { connect_to_db } from './config/db';
 import { jwtDecode } from 'jwt-decode';
+import { updateUser } from './helper';
 
 connect_to_db();
 
@@ -35,25 +36,36 @@ function findSocketId(receiverId: string) {
     return null;
 }
 
+
 io.on('connection', (socket) => {
-    const token = socket.handshake.auth.token;
-    const { profile }: any = jwtDecode(token);
-    online_users.set(socket.id, profile);
-    console.log(online_users);
+    try {
+        const token = socket.handshake.auth.token.toString();
+        const { profile }: any = jwtDecode(token);
 
-    io.emit('online_users', Array.from(online_users));
+        // Add or update the profile with an `online` field set to true
+        updateUser(online_users, profile, socket.id);
 
-    socket.on('message', (payload) => {
-        const socketId = findSocketId(payload.receiver);
-        io.to(socketId).emit("message", payload);
-    })
+        // Broadcast the updated list of online users
+        io.emit('online_users', Array.from(online_users));
 
-    socket.on('disconnect', () => {
-        online_users.delete(socket.id);
-        socket.disconnect();
-        io.emit('all_users', Array.from(online_users));
-    })
+        // Listen for messages
+        socket.on('message', (payload) => {
+            const socketId = findSocketId(payload.receiver);
+            if (socketId) {
+                io.to(socketId).emit("message", payload);
+            }
+        });
 
+        // On disconnect
+        socket.on('disconnect', () => {
+            const userProfile = online_users.get(socket.id);
+            userProfile.status = 'offline';
+            io.emit('online_users', Array.from(online_users));
+        });
+
+    } catch (error) {
+        console.error('Error during connection:', error);
+    }
 });
 
 // *** routing ***

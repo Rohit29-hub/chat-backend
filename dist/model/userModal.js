@@ -38,6 +38,14 @@ const userProfileSchema = new mongoose_1.Schema({
         type: String,
         default: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDsD_blJtJsOwjXmWcxeYoSrW9rOaNBYhK2w&s'
     },
+    status: {
+        type: Boolean,
+        default: false
+    },
+    lastOnline: {
+        type: String,
+        default: Date.now()
+    },
     desc: {
         type: String,
         required: [true, 'Description required']
@@ -66,7 +74,7 @@ const userSchema = new mongoose_1.Schema({
         type: Map,
         of: [String],
         default: {}
-    }
+    },
 }, { timestamps: true });
 exports.UserProfile = mongoose_1.default.model('UserProfile', userProfileSchema);
 exports.User = mongoose_1.default.model('User', userSchema);

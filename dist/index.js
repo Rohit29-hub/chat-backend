@@ -11,6 +11,7 @@ const userRoute_1 = __importDefault(require("./routes/userRoute"));
 const messageRoute_1 = __importDefault(require("./routes/messageRoute"));
 const db_1 = require("./config/db");
 const jwt_decode_1 = require("jwt-decode");
+const helper_1 = require("./helper");
 (0, db_1.connect_to_db)();
 const app = (0, express_1.default)();
 const httpServer = (0, http_1.createServer)(app);
@@ -34,20 +35,30 @@ function findSocketId(receiverId) {
     return null;
 }
 io.on('connection', (socket) => {
-    const token = socket.handshake.auth.token;
-    const { profile } = (0, jwt_decode_1.jwtDecode)(token);
-    online_users.set(socket.id, profile);
-    console.log(online_users);
-    io.emit('online_users', Array.from(online_users));
-    socket.on('message', (payload) => {
-        const socketId = findSocketId(payload.receiver);
-        io.to(socketId).emit("message", payload);
-    });
-    socket.on('disconnect', () => {
-        online_users.delete(socket.id);
-        socket.disconnect();
-        io.emit('all_users', Array.from(online_users));
-    });
+    try {
+        const token = socket.handshake.auth.token.toString();
+        const { profile } = (0, jwt_decode_1.jwtDecode)(token);
+        // Add or update the profile with an `online` field set to true
+        (0, helper_1.updateUser)(online_users, profile, socket.id);
+        // Broadcast the updated list of online users
+        io.emit('online_users', Array.from(online_users));
+        // Listen for messages
+        socket.on('message', (payload) => {
+            const socketId = findSocketId(payload.receiver);
+            if (socketId) {
+                io.to(socketId).emit("message", payload);
+            }
+        });
+        // On disconnect
+        socket.on('disconnect', () => {
+            const userProfile = online_users.get(socket.id);
+            userProfile.status = 'offline';
+            io.emit('online_users', Array.from(online_users));
+        });
+    }
+    catch (error) {
+        console.error('Error during connection:', error);
+    }
 });
 // *** routing ***
 app.use('/api/user', userRoute_1.default);
